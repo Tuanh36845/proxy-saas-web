@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [proxies, setProxies] = useState<Proxy[]>([]);
   const [balance, setBalance] = useState<number>(0);
+  const [liveRatio, setLiveRatio] = useState<number>(0);
   
   // Purchase State
   const [purchaseQty, setPurchaseQty] = useState<number>(1);
@@ -37,7 +38,12 @@ export default function DashboardPage() {
       const proxyData = await proxyRes.json();
       const profileData = await profileRes.json();
       
-      if (proxyData.proxies) setProxies(proxyData.proxies);
+      if (proxyData.proxies) {
+          const prox = proxyData.proxies;
+          setProxies(prox);
+          const activeCount = prox.filter((p: Proxy) => p.status === "active").length;
+          setLiveRatio(prox.length > 0 ? Math.round((activeCount / prox.length) * 100) : 0);
+      }
       if (profileData.user) setBalance(profileData.user.balance || 0);
     } catch (error) {
       console.error("Lỗi tải proxy", error);
@@ -129,11 +135,11 @@ export default function DashboardPage() {
                                 <div className="text-uppercase text-info mb-1 fw-bold text-xs"><span>Tỷ lệ live</span></div>
                                 <div className="row g-0 align-items-center">
                                     <div className="col-auto">
-                                        <div className="text-dark me-3 mb-0 fw-bold h5"><span>50%</span></div>
+                                        <div className="text-dark me-3 mb-0 fw-bold h5"><span>{liveRatio}%</span></div>
                                     </div>
                                     <div className="col">
                                         <div className="progress progress-sm">
-                                            <div className="progress-bar bg-info" aria-valuenow={50} aria-valuemin={0} aria-valuemax={100} style={{ width: "50%" }}><span className="visually-hidden">50%</span></div>
+                                            <div className="progress-bar bg-info" aria-valuenow={liveRatio} aria-valuemin={0} aria-valuemax={100} style={{ width: `${liveRatio}%` }}><span className="visually-hidden">{liveRatio}%</span></div>
                                         </div>
                                     </div>
                                 </div>

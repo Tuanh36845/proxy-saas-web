@@ -62,6 +62,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                               <Link className={`dropdown-item text-dark px-3 py-2 ${pathname === '/contact' ? 'active font-weight-bold bg-light' : ''}`} href="/contact" style={{fontSize: "13px"}}>
                                   <i className="fas fa-headset me-2"></i> Liên hệ & Trợ giúp
                               </Link>
+                              
+                              <Link className={`dropdown-item text-dark px-3 py-2 ${pathname === '/deposit' ? 'active font-weight-bold bg-light' : ''}`} href="/deposit" style={{fontSize: "13px"}}>
+                                  <i className="fas fa-wallet me-2"></i> Nạp Tiền
+                              </Link>
+
                               <div className="dropdown-divider"></div>
                               <a className="dropdown-item text-danger px-3 py-2" onClick={() => signOut()} style={{fontSize: "13px", cursor: "pointer"}}>
                                   <i className="fas fa-sign-out-alt me-2"></i> Đăng Xuất
