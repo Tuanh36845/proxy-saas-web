@@ -1,9 +1,7 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import DashboardLayout from "@/components/DashboardLayout";
 
 interface Proxy {
   _id: string;
@@ -20,17 +18,11 @@ interface Proxy {
 }
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
   const [proxies, setProxies] = useState<Proxy[]>([]);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    } else if (status === "authenticated") {
       fetchProxies();
-    }
-  }, [status]);
+  }, []);
 
   const fetchProxies = async () => {
     try {
@@ -42,225 +34,192 @@ export default function DashboardPage() {
     }
   };
 
-  const handleAction = async (proxyId: string, action: "rotate" | "toggleAutoRotate") => {
-    try {
-      const res = await fetch("/api/proxies", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ proxyId, action }),
-      });
-      const data = await res.json();
-      if (!res.ok) alert(data.error);
-      else {
-        alert(data.message);
-        fetchProxies();
-      }
-    } catch (error) {
-      alert("Đã xảy ra lỗi hệ thống");
-    }
-  };
-
-  if (status === "loading" || status === "unauthenticated") {
-        return <div className="d-flex justify-content-center align-items-center vh-100">Loading...</div>;
-  }
-
   return (
-    <div id="wrapper">
-      {/* Sidebar */}
-      <nav className="navbar align-items-start p-0 sidebar sidebar-dark accordion bg-gradient-primary navbar-dark">
-          <div className="container-fluid d-flex flex-column p-0">
-              <hr className="my-0 sidebar-divider" />
-              <img src="/assets/img/autoproxy_logo.png" width="216" height="64" alt="Logo" />
-              <ul className="navbar-nav text-light" id="accordionSidebar">
-                  <li className="nav-item">
-                      <a className="nav-link active collapsed" data-bs-toggle="collapse" href="#collapseAdmin" role="button" aria-expanded="false" aria-controls="collapseAdmin" style={{display: "flex", alignItems: "center"}}>
-                          <i className="fas fa-tachometer-alt"></i>
-                          <span style={{marginLeft: "10px"}}>Bảng Điều Khiển</span>
-                          <i className="fas fa-chevron-down" style={{marginLeft: "auto", fontSize: "10px"}}></i>
-                      </a>
-                      <div className="collapse show" id="collapseAdmin">
-                          <div className="bg-white py-2 collapse-inner rounded mx-2" style={{listStyle: "none"}}>
-                              <Link className="dropdown-item text-dark px-3 py-2" href="#" style={{fontSize: "13px"}}>
-                                  <i className="fas fa-user-circle me-2"></i> Hồ sơ
-                              </Link>
-                              <a className="dropdown-item text-dark px-3 py-2" onClick={() => signOut()} style={{fontSize: "13px", cursor: "pointer"}}>
-                                  <i className="fas fa-sign-out-alt me-2"></i> Đăng Xuất
-                              </a>
-                          </div>
-                      </div>
-                  </li>
-              </ul>
-              <div className="text-center d-none d-md-inline"><button className="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>
-          </div>
-      </nav>
+    <DashboardLayout>
+        <div className="d-sm-flex justify-content-between align-items-center mb-4">
+            <h3 className="text-dark mb-0">Bảng Điều Khiển AutoProxy</h3>
+            <a className="btn btn-primary btn-sm d-none d-sm-inline-block" role="button" href="#">
+                <i className="fas fa-download fa-sm text-white-50"></i> Tạo báo cáo
+            </a>
+        </div>
 
-      {/* Main Content */}
-      <div className="d-flex flex-column" id="content-wrapper">
-          <div id="content">
-              {/* Topbar */}
-              <nav className="navbar navbar-expand bg-white shadow mb-4 topbar">
-                  <div className="container-fluid">
-                      <button className="btn btn-link d-md-none me-3 rounded-circle" id="sidebarToggleTop" type="button"><i className="fas fa-bars"></i></button>
-                      <ul className="navbar-nav flex-nowrap ms-auto">
-                          <li className="nav-item dropdown no-arrow">
-                              <div className="nav-item dropdown no-arrow">
-                                  <a className="dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false" href="#">
-                                      <span className="d-none d-lg-inline me-2 text-gray-600 small">Xin chào, {session?.user?.name}</span>
-                                      <img className="border rounded-circle img-profile" src="/assets/img/avatars/avatar1.jpeg" alt="Profile" />
-                                  </a>
-                              </div>
-                          </li>
-                      </ul>
-                  </div>
-              </nav>
+        {/* Dashboard Cards */}
+        <div className="row">
+            <div className="col-md-6 col-xl-3 mb-4">
+                <div className="card shadow py-2 border-left-primary">
+                    <div className="card-body">
+                        <div className="row g-0 align-items-center">
+                            <div className="col me-2">
+                                <div className="text-uppercase text-primary mb-1 fw-bold text-xs"><span>số dư của bạn</span></div>
+                                <div className="text-dark mb-0 fw-bold h5"><span>$0</span></div>
+                            </div>
+                            <div className="col-auto"><i className="fas fa-database fa-2x text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="col-md-6 col-xl-3 mb-4">
+                <div className="card shadow py-2 border-left-success">
+                    <div className="card-body">
+                        <div className="row g-0 align-items-center">
+                            <div className="col me-2">
+                                <div className="text-uppercase text-success mb-1 fw-bold text-xs"><span>Tổng nạp</span></div>
+                                <div className="text-dark mb-0 fw-bold h5"><span>$0</span></div>
+                            </div>
+                            <div className="col-auto"><i className="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="col-md-6 col-xl-3 mb-4">
+                <div className="card shadow py-2 border-left-info">
+                    <div className="card-body">
+                        <div className="row g-0 align-items-center">
+                            <div className="col me-2">
+                                <div className="text-uppercase text-info mb-1 fw-bold text-xs"><span>Tỷ lệ live</span></div>
+                                <div className="row g-0 align-items-center">
+                                    <div className="col-auto">
+                                        <div className="text-dark me-3 mb-0 fw-bold h5"><span>50%</span></div>
+                                    </div>
+                                    <div className="col">
+                                        <div className="progress progress-sm">
+                                            <div className="progress-bar bg-info" aria-valuenow={50} aria-valuemin={0} aria-valuemax={100} style={{ width: "50%" }}><span className="visually-hidden">50%</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-auto"><i className="fas fa-clipboard-list fa-2x text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="col-md-6 col-xl-3 mb-4">
+                <div className="card shadow py-2 border-left-warning">
+                    <div className="card-body">
+                        <div className="row g-0 align-items-center">
+                            <div className="col me-2">
+                                <div className="text-uppercase text-warning mb-1 fw-bold text-xs"><span>Proxy Đang Hoạt Động</span></div>
+                                <div className="text-dark mb-0 fw-bold h5"><span>{proxies.length}</span></div>
+                            </div>
+                            <div className="col-auto"><i className="fas fa-seedling fa-2x text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-              <div className="container-fluid">
-                  <div className="d-sm-flex justify-content-between align-items-center mb-4">
-                      <h3 className="text-dark mb-0">Bảng Điều Khiển AutoProxy</h3>
-                  </div>
-
-                  {/* Dashboard Cards */}
-                  <div className="row">
-                      <div className="col-md-6 col-xl-3 mb-4">
-                          <div className="card shadow py-2 border-left-primary">
-                              <div className="card-body">
-                                  <div className="row g-0 align-items-center">
-                                      <div className="col me-2">
-                                          <div className="text-uppercase text-primary mb-1 fw-bold text-xs"><span>số dư của bạn</span></div>
-                                          <div className="text-dark mb-0 fw-bold h5"><span>$0</span></div>
+        {/* Pricing Plans */}
+        <section className="py-2 pricing">
+            <div className="row">
+                <div className="col-lg-4 mb-4">
+                    <div className="card">
+                        <div className="card-body">
+                            <h5 className="card-title text-muted text-uppercase text-center">Proxy Tĩnh IPv4</h5>
+                            <h6 className="card-price text-center">40.000đ<span className="period">/tháng</span></h6>
+                            <hr />
+                            <ul className="fa-ul">
+                                <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>IP Cố định Dài hạn</li>
+                                <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>SOCKS5 / HTTP</li>
+                            </ul>
+                            <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button">Mua Gói</button>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-4 mb-4">
+                    <div className="card">
+                        <div className="card-body">
+                            <h5 className="card-title text-muted text-uppercase text-center">IPv6 Datacenter</h5>
+                            <h6 className="card-price text-center">20.000đ<span className="period">/tháng</span></h6>
+                            <hr />
+                            <ul className="fa-ul">
+                                <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>Single User</li>
+                                <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>5GB Storage</li>
+                                <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>Unlimited Public Projects</li>
+                                <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>Community Access</li>
+                            </ul>
+                            <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button">Mua Gói</button>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-4 mb-4">
+                    <div className="card">
+                        <div className="card-body">
+                            <h5 className="card-title text-muted text-uppercase text-center">Proxy Động (Xoay IP)</h5>
+                            <h6 className="card-price text-center">149.000đ<span className="period">/tháng</span></h6>
+                            <hr />
+                            <ul className="fa-ul">
+                                <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>Xoay IP Liên tục (10p)</li>
+                                <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>SOCKS5 Private Mượt mà</li>
+                                <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>Auto Xoay 30p</li>
+                            </ul>
+                            <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button">Mua Gói</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {/* Purchasing Table that matches original index.html */}
+            <div className="row">
+                <div className="col col-md-12 search-table-col"><span className="counter pull-right"></span>
+                    <div className="table-responsive table table-hover table-bordered results">
+                        <table className="table table-hover table-bordered">
+                            <thead className="bill-header cs">
+                                <tr>
+                                    <th id="trs-hd-1" className="col-lg-1">Số Lượng</th>
+                                    <th id="trs-hd-2" className="col-lg-2">Loại Proxy</th>
+                                    <th id="trs-hd-3" className="col-lg-3">Quốc Gia</th>
+                                    <th id="trs-hd-4" className="col-lg-2">Mua Đến Ngày</th>
+                                    <th id="trs-hd-5" className="col-lg-2">Thành Tiền</th>
+                                    <th id="trs-hd-6" className="col-lg-2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="proxy-row">
+                                    <td>
+                                      <input type="number" className="form-control form-control-sm qty-input" defaultValue="1" min="1" style={{width: "65px", textAlign: "center", margin: "auto"}} />
+                                    </td>
+                                    <td>
+                                      <div>
+                                        <select className="form-select form-select-sm">
+                                            <option value="ipv4">IPv4 Datacenter</option>
+                                            <option value="ipv6">IPv6 Datacenter</option>
+                                            <option value="rotate">IPv4 Xoay (Động)</option>
+                                        </select>
                                       </div>
-                                      <div className="col-auto"><i className="fas fa-database fa-2x text-gray-300"></i></div>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                      <div className="col-md-6 col-xl-3 mb-4">
-                          <div className="card shadow py-2 border-left-success">
-                              <div className="card-body">
-                                  <div className="row g-0 align-items-center">
-                                      <div className="col me-2">
-                                          <div className="text-uppercase text-success mb-1 fw-bold text-xs"><span>Tổng nạp</span></div>
-                                          <div className="text-dark mb-0 fw-bold h5"><span>$0</span></div>
+                                    </td>
+                                    <td>
+                                      <div>
+                                        <select className="form-select form-select-sm">
+                                            <option value="vn">Việt Nam (VN)</option>
+                                            <option value="us">United States (US)</option>
+                                            <option value="sg">Singapore (SG)</option>
+                                        </select>
                                       </div>
-                                      <div className="col-auto"><i className="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                      <div className="col-md-6 col-xl-3 mb-4">
-                          <div className="card shadow py-2 border-left-warning">
-                              <div className="card-body">
-                                  <div className="row g-0 align-items-center">
-                                      <div className="col me-2">
-                                          <div className="text-uppercase text-warning mb-1 fw-bold text-xs"><span>Proxy Đang Hoạt Động</span></div>
-                                          <div className="text-dark mb-0 fw-bold h5"><span>{proxies.length}</span></div>
-                                      </div>
-                                      <div className="col-auto"><i className="fas fa-seedling fa-2x text-gray-300"></i></div>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-
-                  {/* Pricing Plans */}
-                  <section className="py-2 pricing">
-                      <div className="row">
-                          <div className="col-lg-4 mb-4">
-                              <div className="card">
-                                  <div className="card-body">
-                                      <h5 className="card-title text-muted text-uppercase text-center">Proxy Tĩnh IPv4</h5>
-                                      <h6 className="card-price text-center">40.000đ<span className="period">/tháng</span></h6>
-                                      <hr />
-                                      <ul className="fa-ul">
-                                          <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>IP Cố định Dài hạn</li>
-                                          <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>SOCKS5 / HTTP</li>
-                                      </ul>
-                                      <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button">MUA NGAY</button>
-                                  </div>
-                              </div>
-                          </div>
-                          <div className="col-lg-4 mb-4">
-                              <div className="card">
-                                  <div className="card-body">
-                                      <h5 className="card-title text-muted text-uppercase text-center">Proxy Động (Xoay IP)</h5>
-                                      <h6 className="card-price text-center">149.000đ<span className="period">/tháng</span></h6>
-                                      <hr />
-                                      <ul className="fa-ul">
-                                          <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>Xoay IP Liên tục (10p)</li>
-                                          <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>SOCKS5 Private Mượt mà</li>
-                                          <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>Auto Xoay 30p</li>
-                                      </ul>
-                                      <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button">MUA NGAY</button>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </section>
-
-                  {/* Proxy Table */}
-                  <div className="card shadow mb-4">
-                      <div className="card-header py-3">
-                          <h6 className="m-0 font-weight-bold text-primary">Kho Proxy Của Bạn</h6>
-                      </div>
-                      <div className="card-body">
-                          <div className="table-responsive">
-                              <table className="table table-bordered table-hover" width="100%" cellSpacing="0">
-                                  <thead>
-                                      <tr>
-                                          <th>Trạng Thái</th>
-                                          <th>Cổng Nối (Port)</th>
-                                          <th>Tài khoản / Mật khẩu</th>
-                                          <th>Địa Chỉ IP Thật</th>
-                                          <th>Hạn Sử Dụng</th>
-                                          <th>Thao Tác</th>
-                                      </tr>
-                                  </thead>
-                                  <tbody>
-                                      {proxies.length === 0 && (
-                                        <tr>
-                                          <td colSpan={6} className="text-center">Chưa có proxy nào. Hãy mua ở trên!</td>
-                                        </tr>
-                                      )}
-                                      {proxies.map(p => (
-                                          <tr key={p._id}>
-                                              <td>
-                                                  {p.status === 'active' ? 
-                                                    <span className="badge bg-success">Hoạt động</span> : 
-                                                    <span className="badge bg-warning">Đang xoay/xử lý</span>}
-                                              </td>
-                                              <td className="font-monospace">proxy.autoproxy.app:<span className="fw-bold text-primary">{p.assignedPort}</span></td>
-                                              <td className="font-monospace">{p.proxyUser} / {p.proxyPass}</td>
-                                              <td className="font-monospace">{p.currentIp || 'Đang chờ cấp IP...'}</td>
-                                              <td>{new Date(p.expiresAt).toLocaleDateString()}</td>
-                                              <td>
-                                                  {p.type === "ROTATING" && (
-                                                      <div className="btn-group" role="group">
-                                                          <button onClick={() => handleAction(p._id, "rotate")} className="btn btn-primary btn-sm mx-1">
-                                                              <i className="fas fa-sync-alt me-1"></i>Xoay (10p)
-                                                          </button>
-                                                          <button onClick={() => handleAction(p._id, "toggleAutoRotate")} className={"btn btn-sm mx-1 " + (p.autoRotateEnabled ? 'btn-success' : 'btn-outline-secondary')}>
-                                                              <i className="fas fa-clock me-1"></i>Auto
-                                                          </button>
-                                                      </div>
-                                                  )}
-                                                  {p.type === "STATIC" && <span className="text-muted small">Proxy Cố Định</span>}
-                                              </td>
-                                          </tr>
-                                      ))}
-                                  </tbody>
-                              </table>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-          <footer className="bg-white sticky-footer">
-              <div className="container my-auto">
-                  <div className="text-center my-auto copyright"><span>Copyright © AutoProxy 2026</span></div>
-              </div>
-          </footer>
-      </div>
-      <a className="border rounded d-inline scroll-to-top" href="#page-top"><i className="fas fa-angle-up"></i></a>
-    </div>
+                                    </td>
+                                    <td>
+                                        <select className="form-select form-select-sm">
+                                            <option value="1">1 Tháng</option>
+                                            <option value="2">2 Tháng</option>
+                                            <option value="3">3 Tháng</option>
+                                            <option value="6">6 Tháng</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <div className="fw-bold text-primary text-nowrap" style={{paddingTop: "5px"}}>
+                                            <span className="total-price">50,000</span> VNĐ
+                                        </div>
+                                    </td>
+                                    <td className="text-center">
+                                      <button className="btn btn-success btn-sm m-1" type="button" onClick={() => alert('Chức năng mua giỏ hàng đang được tích hợp')}><i className="fa fa-shopping-cart" style={{fontSize: "15px"}}></i></button>
+                                      <button className="btn btn-danger btn-sm m-1" type="button" onClick={() => alert('Chức năng xóa giỏ hàng đang được tích hợp')}><i className="fa fa-trash" style={{fontSize: "15px"}}></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </DashboardLayout>
   );
 }
