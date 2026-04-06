@@ -6,6 +6,9 @@ export interface IUser extends Document {
   name: string;
   role: "admin" | "customer";
   balance: number;
+  totalDeposit: number;
+  userId?: string;
+  isVerified?: boolean;
   avatar?: string;
   age?: number;
   gender?: string;
@@ -21,6 +24,9 @@ const UserSchema = new Schema<IUser>({
   name: { type: String, required: true },
   role: { type: String, enum: ["admin", "customer"], default: "customer" },
   balance: { type: Number, default: 0 },
+  totalDeposit: { type: Number, default: 0 },
+  userId: { type: String, unique: true, sparse: true },
+  isVerified: { type: Boolean, default: false },
   avatar: { type: String },
   age: { type: Number },
   gender: { type: String },

@@ -15,11 +15,20 @@ export async function GET() {
     const user = await User.findOne({ email: session.user.email });
     if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+    // Tự động sinh ID User nếu chưa có (lazy creation)
+    if (!user.userId) {
+        user.userId = "UID-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+        await user.save();
+    }
+
     return NextResponse.json({
         user: {
+            userId: user.userId,
             name: user.name,
             email: user.email,
             balance: user.balance,
+            totalDeposit: user.totalDeposit,
+            isVerified: user.isVerified,
             avatar: user.avatar,
             age: user.age,
             gender: user.gender,
