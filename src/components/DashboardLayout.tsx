@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
@@ -10,11 +10,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
 
+  const [userInfo, setUserInfo] = useState<any>(null);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
+    } else if (status === "authenticated") {
+      fetchUserInfo();
     }
   }, [status]);
+
+  const fetchUserInfo = async () => {
+    try {
+      const res = await fetch("/api/users/profile");
+      const data = await res.json();
+      if (res.ok) setUserInfo(data.user);
+    } catch (error) {
+      console.error("Lỗi lấy thông tin user", error);
+    }
+  };
 
   if (status === "loading" || status === "unauthenticated") {
     return <div className="d-flex justify-content-center align-items-center vh-100">Loading...</div>;
@@ -68,12 +82,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <div className="container-fluid">
                       <button className="btn btn-link d-md-none me-3 rounded-circle" id="sidebarToggleTop" type="button"><i className="fas fa-bars"></i></button>
                       <ul className="navbar-nav flex-nowrap ms-auto">
+                          
+                          {/* Nút Giỏ Hàng Mới Thêm */}
+                          <li className="nav-item mx-1 dropdown no-arrow d-flex align-items-center">
+                                <Link className="nav-link" href="#" onClick={() => alert("Trang giỏ hàng đang được phát triển")} style={{position: "relative"}}>
+                                    <i className="fas fa-shopping-cart fa-fw fs-5 text-gray-500"></i>
+                                    <span className="badge bg-danger badge-counter" style={{position: "absolute", top: "15px", right: "5px", transform: "scale(0.8)"}}>0</span>
+                                </Link>
+                          </li>
+                          
+                          <div className="d-none d-sm-block topbar-divider"></div>
+
+                          {/* Thông Tin Người Dùng */}
                           <li className="nav-item dropdown no-arrow">
                               <div className="nav-item dropdown no-arrow">
-                                  <a className="dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false" href="#">
-                                      <span className="d-none d-lg-inline me-2 text-gray-600 small">Xin chào, {session?.user?.name || "Thành Viên"}</span>
-                                      <img className="border rounded-circle img-profile" src="/assets/img/avatars/avatar1.jpeg" alt="Profile" />
-                                  </a>
+                                  <Link className="dropdown-toggle nav-link" href="/profile" style={{textDecoration: "none"}}>
+                                      <span className="d-none d-lg-inline me-2 text-gray-600 small fw-bold">Xin chào, {userInfo?.name || session?.user?.name || "Thành Viên"}</span>
+                                      <img 
+                                        className="border rounded-circle img-profile" 
+                                        src={userInfo?.avatar || "/assets/img/autoproxy_logo.png"} 
+                                        alt="Profile" 
+                                        style={{objectFit: "cover"}}
+                                      />
+                                  </Link>
                               </div>
                           </li>
                       </ul>

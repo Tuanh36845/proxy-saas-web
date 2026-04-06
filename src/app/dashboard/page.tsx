@@ -2,35 +2,85 @@
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useRouter } from "next/navigation";
 
 interface Proxy {
   _id: string;
   type: string;
   assignedPort: number;
   currentIp: string;
-  proxyUser: string;
-  proxyPass: string;
   status: string;
-  expiresAt: string;
-  rotateEnabled: boolean;
-  autoRotateEnabled: boolean;
-  lastRotatedAt: string;
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [proxies, setProxies] = useState<Proxy[]>([]);
+  const [balance, setBalance] = useState<number>(0);
+  
+  // Purchase State
+  const [purchaseQty, setPurchaseQty] = useState<number>(1);
+  const [purchaseType, setPurchaseType] = useState<string>("ipv4");
+  const [purchaseCountry, setPurchaseCountry] = useState<string>("vn");
+  const [purchaseMonths, setPurchaseMonths] = useState<number>(1);
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
   useEffect(() => {
-      fetchProxies();
+    fetchProxies();
   }, []);
 
   const fetchProxies = async () => {
     try {
-      const res = await fetch("/api/proxies");
-      const data = await res.json();
-      if (data.proxies) setProxies(data.proxies);
+      const [proxyRes, profileRes] = await Promise.all([
+        fetch("/api/proxies"),
+        fetch("/api/users/profile")
+      ]);
+      const proxyData = await proxyRes.json();
+      const profileData = await profileRes.json();
+      
+      if (proxyData.proxies) setProxies(proxyData.proxies);
+      if (profileData.user) setBalance(profileData.user.balance || 0);
     } catch (error) {
       console.error("Lỗi tải proxy", error);
+    }
+  };
+
+  // Tính giá tiền
+  const getPricePerMonth = (type: string) => {
+    if (type === "ipv4") return 40000;
+    if (type === "ipv6") return 20000;
+    if (type === "rotate") return 149000;
+    return 0;
+  };
+
+  const totalPrice = purchaseQty * getPricePerMonth(purchaseType) * purchaseMonths;
+
+  const handlePurchase = async () => {
+    if (!purchaseQty || purchaseQty < 1) return alert("Vui lòng chọn số lượng hợp lệ!");
+    
+    setIsPurchasing(true);
+    try {
+        const res = await fetch("/api/proxies/purchase", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                type: purchaseType,
+                country: purchaseCountry,
+                months: purchaseMonths,
+                qty: purchaseQty,
+                totalPrice: totalPrice
+            })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            alert(data.error || "Lỗi giao dịch!");
+            setIsPurchasing(false);
+        } else {
+            alert("Thanh toán thành công! Đã thêm proxy vào kho.");
+            router.push("/inventory");
+        }
+    } catch (error) {
+        alert("Có lỗi kết nối hệ thống!");
+        setIsPurchasing(false);
     }
   };
 
@@ -51,7 +101,7 @@ export default function DashboardPage() {
                         <div className="row g-0 align-items-center">
                             <div className="col me-2">
                                 <div className="text-uppercase text-primary mb-1 fw-bold text-xs"><span>số dư của bạn</span></div>
-                                <div className="text-dark mb-0 fw-bold h5"><span>$0</span></div>
+                                <div className="text-dark mb-0 fw-bold h5"><span>{balance.toLocaleString()} VNĐ</span></div>
                             </div>
                             <div className="col-auto"><i className="fas fa-database fa-2x text-gray-300"></i></div>
                         </div>
@@ -121,7 +171,7 @@ export default function DashboardPage() {
                                 <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>IP Cố định Dài hạn</li>
                                 <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>SOCKS5 / HTTP</li>
                             </ul>
-                            <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button">Mua Gói</button>
+                            <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button" onClick={() => setPurchaseType("ipv4")}>Chọn Gói</button>
                         </div>
                     </div>
                 </div>
@@ -137,7 +187,7 @@ export default function DashboardPage() {
                                 <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>Unlimited Public Projects</li>
                                 <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>Community Access</li>
                             </ul>
-                            <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button">Mua Gói</button>
+                            <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button" onClick={() => setPurchaseType("ipv6")}>Chọn Gói</button>
                         </div>
                     </div>
                 </div>
@@ -152,44 +202,46 @@ export default function DashboardPage() {
                                 <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>SOCKS5 Private Mượt mà</li>
                                 <li><span className="fa-li"><i className="fa fa-check text-success"></i></span>Auto Xoay 30p</li>
                             </ul>
-                            <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button">Mua Gói</button>
+                            <button className="btn btn-outline-primary d-block text-uppercase w-100" type="button" onClick={() => setPurchaseType("rotate")}>Chọn Gói</button>
                         </div>
                     </div>
                 </div>
             </div>
             
             {/* Purchasing Table that matches original index.html */}
-            <div className="row">
+            <div className="row mt-4">
                 <div className="col col-md-12 search-table-col"><span className="counter pull-right"></span>
-                    <div className="table-responsive table table-hover table-bordered results">
-                        <table className="table table-hover table-bordered">
-                            <thead className="bill-header cs">
+                    <div className="table-responsive table table-hover table-bordered results bg-white shadow-sm rounded">
+                        <table className="table table-hover table-bordered mb-0">
+                            <thead className="bill-header cs bg-light">
                                 <tr>
-                                    <th id="trs-hd-1" className="col-lg-1">Số Lượng</th>
+                                    <th id="trs-hd-1" className="col-lg-1 text-center">Số Lượng</th>
                                     <th id="trs-hd-2" className="col-lg-2">Loại Proxy</th>
-                                    <th id="trs-hd-3" className="col-lg-3">Quốc Gia</th>
-                                    <th id="trs-hd-4" className="col-lg-2">Mua Đến Ngày</th>
+                                    <th id="trs-hd-3" className="col-lg-3">Quốc Gia (Đồng giá)</th>
+                                    <th id="trs-hd-4" className="col-lg-2">Thời Gian</th>
                                     <th id="trs-hd-5" className="col-lg-2">Thành Tiền</th>
-                                    <th id="trs-hd-6" className="col-lg-2">Action</th>
+                                    <th id="trs-hd-6" className="col-lg-2 text-center">Xác Nhận</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr className="proxy-row">
-                                    <td>
-                                      <input type="number" className="form-control form-control-sm qty-input" defaultValue="1" min="1" style={{width: "65px", textAlign: "center", margin: "auto"}} />
+                                <tr className="proxy-row align-middle">
+                                    <td className="text-center">
+                                      <input type="number" className="form-control form-control-sm qty-input mx-auto" 
+                                             value={purchaseQty} onChange={(e) => setPurchaseQty(Number(e.target.value))} 
+                                             min="1" style={{width: "65px", textAlign: "center"}} />
                                     </td>
                                     <td>
                                       <div>
-                                        <select className="form-select form-select-sm">
-                                            <option value="ipv4">IPv4 Datacenter</option>
-                                            <option value="ipv6">IPv6 Datacenter</option>
-                                            <option value="rotate">IPv4 Xoay (Động)</option>
+                                        <select className="form-select form-select-sm" value={purchaseType} onChange={(e) => setPurchaseType(e.target.value)}>
+                                            <option value="ipv4">IPv4 Datacenter (40.000đ)</option>
+                                            <option value="ipv6">IPv6 Datacenter (20.000đ)</option>
+                                            <option value="rotate">IPv4 Xoay (149.000đ)</option>
                                         </select>
                                       </div>
                                     </td>
                                     <td>
                                       <div>
-                                        <select className="form-select form-select-sm">
+                                        <select className="form-select form-select-sm" value={purchaseCountry} onChange={(e) => setPurchaseCountry(e.target.value)}>
                                             <option value="vn">Việt Nam (VN)</option>
                                             <option value="us">United States (US)</option>
                                             <option value="sg">Singapore (SG)</option>
@@ -197,21 +249,23 @@ export default function DashboardPage() {
                                       </div>
                                     </td>
                                     <td>
-                                        <select className="form-select form-select-sm">
+                                        <select className="form-select form-select-sm" value={purchaseMonths} onChange={(e) => setPurchaseMonths(Number(e.target.value))}>
                                             <option value="1">1 Tháng</option>
                                             <option value="2">2 Tháng</option>
                                             <option value="3">3 Tháng</option>
                                             <option value="6">6 Tháng</option>
+                                            <option value="12">12 Tháng</option>
                                         </select>
                                     </td>
                                     <td>
-                                        <div className="fw-bold text-primary text-nowrap" style={{paddingTop: "5px"}}>
-                                            <span className="total-price">50,000</span> VNĐ
+                                        <div className="fw-bold text-primary text-nowrap" style={{fontSize: "1.1rem"}}>
+                                            <span className="total-price">{totalPrice.toLocaleString()}</span> VNĐ
                                         </div>
                                     </td>
                                     <td className="text-center">
-                                      <button className="btn btn-success btn-sm m-1" type="button" onClick={() => alert('Chức năng mua giỏ hàng đang được tích hợp')}><i className="fa fa-shopping-cart" style={{fontSize: "15px"}}></i></button>
-                                      <button className="btn btn-danger btn-sm m-1" type="button" onClick={() => alert('Chức năng xóa giỏ hàng đang được tích hợp')}><i className="fa fa-trash" style={{fontSize: "15px"}}></i></button>
+                                      <button disabled={isPurchasing} className="btn btn-success btn-sm w-100 fw-bold shadow-sm" type="button" onClick={handlePurchase}>
+                                        {isPurchasing ? <i className="fas fa-spinner fa-spin"></i> : <><i className="fas fa-shopping-cart me-1"></i> MUA NGAY</>}
+                                      </button>
                                     </td>
                                 </tr>
                             </tbody>
