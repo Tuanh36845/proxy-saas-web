@@ -23,7 +23,9 @@ export default function RegisterPage() {
     setSuccess("");
 
     try {
-      const name = \`\${formData.get("first_name")} \${formData.get("last_name")}\`;
+      const firstName = formData.get("first_name")?.toString() || "";
+      const lastName = formData.get("last_name")?.toString() || "";
+      const name = firstName + " " + lastName;
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -238,7 +238,7 @@ export default function DashboardPage() {
                                                           <button onClick={() => handleAction(p._id, "rotate")} className="btn btn-primary btn-sm mx-1">
                                                               <i className="fas fa-sync-alt me-1"></i>Xoay (10p)
                                                           </button>
-                                                          <button onClick={() => handleAction(p._id, "toggleAutoRotate")} className={\`btn btn-sm mx-1 \${p.autoRotateEnabled ? 'btn-success' : 'btn-outline-secondary'}\`}>
+                                                          <button onClick={() => handleAction(p._id, "toggleAutoRotate")} className={"btn btn-sm mx-1 " + (p.autoRotateEnabled ? 'btn-success' : 'btn-outline-secondary')}>
                                                               <i className="fas fa-clock me-1"></i>Auto
                                                           </button>
                                                       </div>
