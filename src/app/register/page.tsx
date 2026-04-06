@@ -90,10 +90,10 @@ export default function RegisterPage() {
                                   </div>
                                   <button className="btn btn-primary d-block w-100 btn-user" type="submit">Đăng Ký</button>
                                   <hr />
-                                  <a className="btn btn-primary d-block w-100 mb-2 btn-google btn-user" role="button">
+                                  <a onClick={() => alert('Chức năng đang được tích hợp, tạm thời khóa.')} className="btn btn-primary d-block w-100 mb-2 btn-google btn-user" role="button" style={{cursor: 'pointer'}}>
                                     <i className="fab fa-google"></i>&nbsp; Đăng Ký Bằng Google
                                   </a>
-                                  <a className="btn btn-primary d-block w-100 btn-facebook btn-user" role="button">
+                                  <a onClick={() => alert('Chức năng đang được tích hợp, tạm thời khóa.')} className="btn btn-primary d-block w-100 btn-facebook btn-user" role="button" style={{cursor: 'pointer'}}>
                                     <i className="fab fa-facebook-f"></i>&nbsp; Đăng Ký Bằng Facebook
                                   </a>
                                   <hr />

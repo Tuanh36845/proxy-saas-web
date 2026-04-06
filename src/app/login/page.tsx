@@ -58,10 +58,10 @@ export default function LoginPage() {
                                           </div>
                                           <button className="btn btn-primary d-block w-100 btn-user" type="submit">Đăng Nhập</button>
                                           <hr />
-                                          <a className="btn btn-primary d-block w-100 mb-2 btn-google btn-user" role="button">
+                                          <a onClick={() => alert('Chức năng đang được tích hợp, tạm thời khóa.')} className="btn btn-primary d-block w-100 mb-2 btn-google btn-user" role="button" style={{cursor: 'pointer'}}>
                                             <i className="fab fa-google"></i>&nbsp; Đăng Nhập Google
                                           </a>
-                                          <a className="btn btn-primary d-block w-100 btn-facebook btn-user" role="button">
+                                          <a onClick={() => alert('Chức năng đang được tích hợp, tạm thời khóa.')} className="btn btn-primary d-block w-100 btn-facebook btn-user" role="button" style={{cursor: 'pointer'}}>
                                             <i className="fab fa-facebook-f"></i>&nbsp; Đăng Nhập Facebook
                                           </a>
                                           <hr />
