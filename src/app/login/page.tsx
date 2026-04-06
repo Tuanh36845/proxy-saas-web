@@ -36,7 +36,7 @@ export default function LoginPage() {
                       <div className="card-body p-0">
                           <div className="row">
                               <div className="col-lg-6 col-xxl-5">
-                                  <div class="p-5">
+                                  <div className="p-5">
                                       <div className="text-center">
                                           <h4 className="text-dark mb-4">Welcome Back!</h4>
                                       </div>
